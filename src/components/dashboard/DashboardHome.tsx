@@ -61,8 +61,14 @@ const RECENTLY_JOINED_ALUMNI = [
   { id: 5, name: 'Farhana Yeasmin', batch: '2021', dept: 'CSE', time: '3 days ago', initials: 'FY', color: 'bg-pink-100 text-pink-600' },
 ];
 
-export const DashboardHome: React.FC = () => {
+interface DashboardHomeProps {
+  userRole?: string;
+}
+
+export const DashboardHome: React.FC<DashboardHomeProps> = ({ userRole = 'SPACE_ADMIN' }) => {
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  const isUniversityAdmin = userRole === 'UNIVERSITY_ADMIN';
 
   return (
     <div className="space-y-8">
@@ -73,7 +79,11 @@ export const DashboardHome: React.FC = () => {
           <div className="flex items-center gap-2 mt-1">
             <p className="text-slate-500 text-sm">{currentDate}</p>
             <span className="text-slate-300">•</span>
-            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">Viewing: CSE Department Data Only</span>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded border ${
+              isUniversityAdmin ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-blue-600 bg-blue-50 border-blue-100'
+            }`}>
+              {isUniversityAdmin ? 'Viewing: All University Data' : 'Viewing: CSE Department Data Only'}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -130,7 +140,9 @@ export const DashboardHome: React.FC = () => {
         <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Alumni Engagement Growth</h3>
+              <h3 className="text-lg font-bold text-slate-900">
+                {isUniversityAdmin ? 'University Engagement Growth' : 'Alumni Engagement Growth'}
+              </h3>
               <p className="text-sm text-slate-500">Active users over the last 7 days</p>
             </div>
             <div className="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-1 rounded-lg text-sm font-medium">
@@ -166,9 +178,11 @@ export const DashboardHome: React.FC = () => {
               <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                 <Users size={20} />
               </div>
-              <span className="text-xs font-medium text-slate-500">Total Alumni (Space)</span>
+              <span className="text-xs font-medium text-slate-500">
+                {isUniversityAdmin ? 'Total Alumni (University)' : 'Total Alumni (Space)'}
+              </span>
             </div>
-            <p className="text-3xl font-bold text-slate-900">845</p>
+            <p className="text-3xl font-bold text-slate-900">{isUniversityAdmin ? '6,355' : '845'}</p>
             <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
               <ArrowUpRight size={12} /> +12% this month
             </p>
@@ -179,7 +193,9 @@ export const DashboardHome: React.FC = () => {
               <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                 <Mail size={20} />
               </div>
-              <span className="text-xs font-medium text-slate-500">Active Alumni (Space)</span>
+              <span className="text-xs font-medium text-slate-500">
+                {isUniversityAdmin ? 'Active Alumni (University)' : 'Active Alumni (Space)'}
+              </span>
             </div>
             <p className="text-3xl font-bold text-slate-900">72.4%</p>
             <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
@@ -192,10 +208,12 @@ export const DashboardHome: React.FC = () => {
               <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                 <Calendar size={20} />
               </div>
-              <span className="text-xs font-medium text-slate-500">Space Events</span>
+              <span className="text-xs font-medium text-slate-500">
+                {isUniversityAdmin ? 'Total Events' : 'Space Events'}
+              </span>
             </div>
-            <p className="text-3xl font-bold text-slate-900">12</p>
-            <p className="text-xs text-slate-400 mt-1">4 Upcoming</p>
+            <p className="text-3xl font-bold text-slate-900">{isUniversityAdmin ? '48' : '12'}</p>
+            <p className="text-xs text-slate-400 mt-1">{isUniversityAdmin ? '12 Upcoming' : '4 Upcoming'}</p>
           </div>
         </div>
       </div>
@@ -210,8 +228,8 @@ export const DashboardHome: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-sm text-slate-500 mb-1">Space Revenue</p>
-                <p className="text-2xl font-bold text-slate-900">$12,450</p>
+                <p className="text-sm text-slate-500 mb-1">{isUniversityAdmin ? 'University Revenue' : 'Space Revenue'}</p>
+                <p className="text-2xl font-bold text-slate-900">{isUniversityAdmin ? '$142,450' : '$12,450'}</p>
               </div>
               <div className="h-10 w-24">
                 <ResponsiveContainer width="100%" height="100%">
@@ -224,11 +242,11 @@ export const DashboardHome: React.FC = () => {
             <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
               <div>
                 <p className="text-xs text-slate-500 mb-1">Income</p>
-                <p className="text-lg font-semibold text-green-600">+$12,500</p>
+                <p className="text-lg font-semibold text-green-600">{isUniversityAdmin ? '+$142,500' : '+$12,500'}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500 mb-1">Expenses</p>
-                <p className="text-lg font-semibold text-red-600">-$4,200</p>
+                <p className="text-lg font-semibold text-red-600">{isUniversityAdmin ? '-$42,200' : '-$4,200'}</p>
               </div>
             </div>
           </div>
@@ -251,23 +269,76 @@ export const DashboardHome: React.FC = () => {
                 <p className="text-xs text-amber-700 mt-0.5">Job postings have increased by 40% this week. Review queue is backing up.</p>
               </div>
             </div>
-            <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg flex items-start gap-3">
-              <CheckCircle2 className="text-slate-600 shrink-0 mt-0.5" size={18} />
-              <div>
-                <p className="text-sm font-medium text-slate-900">Profile Completion Goal Met</p>
-                <p className="text-xs text-slate-600 mt-0.5">We hit the 80% profile completion target for the current graduating class.</p>
+            {isUniversityAdmin && (
+              <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg flex items-start gap-3">
+                <TrendingUp className="text-emerald-600 shrink-0 mt-0.5" size={18} />
+                <div>
+                  <p className="text-sm font-medium text-emerald-900">Business School Space Outperforming</p>
+                  <p className="text-xs text-emerald-700 mt-0.5">The Business School space has achieved 95% engagement this month. Consider replicating their communication strategy.</p>
+                </div>
               </div>
-            </div>
+            )}
+            {!isUniversityAdmin && (
+              <div className="p-3 bg-slate-50 border border-slate-100 rounded-lg flex items-start gap-3">
+                <CheckCircle2 className="text-slate-600 shrink-0 mt-0.5" size={18} />
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Profile Completion Goal Met</p>
+                  <p className="text-xs text-slate-600 mt-0.5">We hit the 80% profile completion target for the current graduating class.</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* SECTION: Space-wise Breakdown (University Admin Only) */}
+      {isUniversityAdmin && (
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Space-wise Breakdown</h3>
+              <p className="text-sm text-slate-500">Performance metrics across all departments and schools</p>
+            </div>
+            <Button variant="outline" size="sm">View Detailed Analytics</Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { name: 'CSE Department', alumni: 845, engagement: '72%', status: 'active' },
+              { name: 'Business School', alumni: 1240, engagement: '95%', status: 'active' },
+              { name: 'EEE Department', alumni: 620, engagement: '65%', status: 'active' },
+              { name: 'Pharmacy Dept', alumni: 450, engagement: '45%', status: 'inactive' },
+            ].map((space) => (
+              <div key={space.name} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                <h4 className="text-sm font-bold text-slate-900 mb-3">{space.name}</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Alumni</span>
+                    <span className="font-bold text-slate-900">{space.alumni.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">Engagement</span>
+                    <span className="font-bold text-blue-600">{space.engagement}</span>
+                  </div>
+                  <div className="pt-2">
+                    <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="h-full bg-blue-500 rounded-full" style={{ width: space.engagement }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* SECTION: Recently Joined Alumni */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-lg font-bold text-slate-900">Recently Joined Alumni</h3>
-            <p className="text-sm text-slate-500">New members in the CSE Department space</p>
+            <p className="text-sm text-slate-500">
+              {isUniversityAdmin ? 'New members across all university spaces' : 'New members in the CSE Department space'}
+            </p>
           </div>
           <Button variant="ghost" size="sm" className="text-blue-600 flex items-center gap-1">
             View Directory <ChevronRight size={16} />

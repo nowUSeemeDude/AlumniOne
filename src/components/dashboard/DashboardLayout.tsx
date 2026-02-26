@@ -28,33 +28,45 @@ interface DashboardLayoutProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onLogout: () => void;
+  userRole?: string;
+  userName?: string;
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
   children, 
   activeTab, 
   onTabChange,
-  onLogout
+  onLogout,
+  userRole = 'SPACE_ADMIN',
+  userName = 'John Doe'
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [currentSpace, setCurrentSpace] = useState('CSE Department');
+  const [currentSpace, setCurrentSpace] = useState(userRole === 'UNIVERSITY_ADMIN' ? 'All Spaces' : 'CSE Department');
   const [isSpaceSelectorOpen, setIsSpaceSelectorOpen] = useState(false);
 
-  const spaces = ['CSE Department', 'Business School', 'EEE Department', 'Pharmacy Department'];
+  const spaces = userRole === 'UNIVERSITY_ADMIN' 
+    ? ['All Spaces', 'CSE Department', 'Business School', 'EEE Department', 'Pharmacy Department']
+    : ['CSE Department', 'Business School', 'EEE Department', 'Pharmacy Department'];
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
+    ...(userRole === 'UNIVERSITY_ADMIN' ? [
+      { id: 'spaces', label: 'Manage Spaces', icon: <Building2 size={20} /> }
+    ] : []),
     { id: 'alumni', label: 'Alumni Directory', icon: <Users size={20} /> },
     { id: 'events', label: 'Events', icon: <Calendar size={20} /> },
     { id: 'jobs', label: 'Jobs & Careers', icon: <Briefcase size={20} /> },
     { id: 'companies', label: 'Companies', icon: <Building2 size={20} /> },
     { id: 'communication', label: 'Communication', icon: <MessageSquare size={20} /> },
     { id: 'finance', label: 'Finance', icon: <DollarSign size={20} /> },
+    ...(userRole === 'UNIVERSITY_ADMIN' ? [
+      { id: 'billing', label: 'Billing & Subscription', icon: <Zap size={20} /> }
+    ] : []),
     { id: 'voting', label: 'Voting', icon: <CheckCircle2 size={20} /> },
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={20} /> },
-    { id: 'settings', label: 'Space Settings', icon: <Settings size={20} /> },
+    { id: 'settings', label: userRole === 'UNIVERSITY_ADMIN' ? 'University Settings' : 'Space Settings', icon: <Settings size={20} /> },
   ];
 
   return (
@@ -163,7 +175,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors border border-slate-200 group"
                 >
                   <div className="flex flex-col items-start">
-                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider leading-none mb-1">Space Admin</span>
+                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider leading-none mb-1">
+                      {userRole === 'UNIVERSITY_ADMIN' ? 'University Admin' : 'Space Admin'}
+                    </span>
                     <span className="text-sm font-bold text-slate-900 leading-none">{currentSpace}</span>
                   </div>
                   <ChevronDown size={16} className={`text-slate-400 transition-transform ${isSpaceSelectorOpen ? 'rotate-180' : ''}`} />
@@ -204,7 +218,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               
               <div className="hidden lg:flex items-center gap-2 px-2 py-1 bg-amber-50 border border-amber-100 rounded-md">
                 <Shield size={14} className="text-amber-600" />
-                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Space-Level Access</span>
+                <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                  {userRole === 'UNIVERSITY_ADMIN' ? 'Full University Access' : 'Space-Level Access'}
+                </span>
               </div>
             </div>
           </div>
@@ -212,7 +228,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className="flex items-center gap-4">
             <div className="hidden xl:flex flex-col items-end mr-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prototype Mode</span>
-              <span className="text-[10px] font-medium text-slate-500">Space Data Simulated</span>
+              <span className="text-[10px] font-medium text-slate-500">
+                {userRole === 'UNIVERSITY_ADMIN' ? 'University Data Simulated' : 'Space Data Simulated'}
+              </span>
             </div>
 
             <button className="relative p-2 text-slate-500 hover:bg-slate-50 rounded-full transition-colors">
@@ -226,11 +244,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
               >
                 <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
-                  JD
+                  {userName.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div className="hidden md:block text-left">
-                  <p className="text-sm font-medium text-slate-900 leading-none">John Doe</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Admin</p>
+                  <p className="text-sm font-medium text-slate-900 leading-none">{userName}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {userRole === 'UNIVERSITY_ADMIN' ? 'University Admin' : 'Space Admin'}
+                  </p>
                 </div>
                 <ChevronDown size={16} className="text-slate-400 ml-1" />
               </button>

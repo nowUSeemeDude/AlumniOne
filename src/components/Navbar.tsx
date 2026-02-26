@@ -6,10 +6,9 @@ import { Button } from './ui/Button';
 interface NavbarProps {
   onStartTrial?: () => void;
   onLogin?: () => void;
-  onAlumniLogin?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onStartTrial, onLogin, onAlumniLogin }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onStartTrial, onLogin }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -55,11 +54,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartTrial, onLogin, onAlumniL
             </a>
           ))}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="text-gray-600" onClick={onLogin}>
-              Admin Login
-            </Button>
-            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={onAlumniLogin}>
-              Alumni Login
+            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={onLogin}>
+              Login
             </Button>
             <Button size="sm" onClick={onStartTrial}>Start Free Trial</Button>
           </div>
@@ -95,11 +91,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartTrial, onLogin, onAlumniL
                 </a>
               ))}
               <div className="pt-4 flex flex-col gap-3">
-                <Button variant="outline" className="w-full justify-center" onClick={onLogin}>
-                  Admin Login
-                </Button>
-                <Button variant="outline" className="w-full justify-center border-blue-200 text-blue-600" onClick={onAlumniLogin}>
-                  Alumni Login
+                <Button variant="outline" className="w-full justify-center border-blue-200 text-blue-600" onClick={onLogin}>
+                  Login
                 </Button>
                 <Button className="w-full justify-center" onClick={() => { setIsOpen(false); onStartTrial?.(); }}>Start Free Trial</Button>
               </div>

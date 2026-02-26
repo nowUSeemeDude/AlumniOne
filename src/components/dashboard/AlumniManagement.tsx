@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface AlumniManagementProps {
   onNavigate?: (tab: string) => void;
+  userRole?: string;
 }
 
 interface Alumni {
@@ -45,12 +46,14 @@ interface Alumni {
   dateOfBirth: string;
 }
 
-export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }) => {
+export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate, userRole = 'SPACE_ADMIN' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAlumni, setSelectedAlumni] = useState<Alumni | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<{id: number, type: 'status' | 'more'} | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const isUniversityAdmin = userRole === 'UNIVERSITY_ADMIN';
 
   // Mock Data - Filtered for CSE Space
   const [alumni, setAlumni] = useState<Alumni[]>([
@@ -251,11 +254,15 @@ export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900">Alumni Directory</h1>
-            <span className="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-              Space: CSE Department
+            <span className={`text-xs font-bold px-2 py-1 rounded-full border ${
+              isUniversityAdmin ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-blue-50 text-blue-700 border-blue-100'
+            }`}>
+              {isUniversityAdmin ? 'University: All Spaces' : 'Space: CSE Department'}
             </span>
           </div>
-          <p className="text-slate-500">Manage alumni within your department.</p>
+          <p className="text-slate-500">
+            {isUniversityAdmin ? 'Manage alumni across all university departments and schools.' : 'Manage alumni within your department.'}
+          </p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" size="sm" leftIcon={<Download size={16} />}>Export CSV</Button>

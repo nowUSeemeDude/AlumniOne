@@ -17,15 +17,14 @@ import { Footer } from './Footer';
 interface LandingPageProps {
   onStartTrial: () => void;
   onLogin: () => void;
-  onAlumniLogin: () => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onStartTrial, onLogin, onAlumniLogin }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onStartTrial, onLogin }) => {
   return (
     <div className="min-h-screen bg-white font-sans text-gray-900 selection:bg-blue-100 selection:text-blue-900">
-      <Navbar onStartTrial={onStartTrial} onLogin={onLogin} onAlumniLogin={onAlumniLogin} />
+      <Navbar onStartTrial={onStartTrial} onLogin={onLogin} />
       <main>
-        <Hero onStartTrial={onStartTrial} onLogin={onLogin} onAlumniLogin={onAlumniLogin} />
+        <Hero onStartTrial={onStartTrial} onLogin={onLogin} />
         <SocialProof />
         <Problem />
         <Solution />

@@ -6,10 +6,9 @@ import { Button } from './ui/Button';
 interface HeroProps {
   onStartTrial?: () => void;
   onLogin?: () => void;
-  onAlumniLogin?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onStartTrial, onLogin, onAlumniLogin }) => {
+export const Hero: React.FC<HeroProps> = ({ onStartTrial, onLogin }) => {
   return (
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden bg-slate-50">
       {/* Background decoration */}
@@ -42,14 +41,9 @@ export const Hero: React.FC<HeroProps> = ({ onStartTrial, onLogin, onAlumniLogin
                 <Button size="lg" rightIcon={<ArrowRight size={18} />} onClick={onStartTrial}>
                   Start Free Trial
                 </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="lg" onClick={onLogin}>
-                    Admin Login
-                  </Button>
-                  <Button variant="outline" size="lg" className="border-blue-200 text-blue-600" onClick={onAlumniLogin}>
-                    Alumni Login
-                  </Button>
-                </div>
+                <Button variant="outline" size="lg" className="border-blue-200 text-blue-600" onClick={onLogin}>
+                  Login to Platform
+                </Button>
               </div>
               <p className="mt-6 text-sm text-gray-500">
                 No credit card required · 14-day free trial · Cancel anytime

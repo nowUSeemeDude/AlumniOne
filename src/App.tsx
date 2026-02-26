@@ -15,6 +15,8 @@ import { Analytics } from './components/dashboard/Analytics';
 import { Finance } from './components/dashboard/Finance';
 import { VotingModule } from './components/dashboard/VotingModule';
 import { Settings } from './components/dashboard/Settings';
+import { SpaceManagement } from './components/dashboard/SpaceManagement';
+import { Billing } from './components/dashboard/Billing';
 import { AlumniOnboarding } from './components/alumni/AlumniOnboarding';
 import { AlumniWorkspaceLayout } from './components/alumni/AlumniWorkspaceLayout';
 import { AlumniHome } from './components/alumni/AlumniHome';
@@ -22,20 +24,43 @@ import { AlumniCommunity } from './components/alumni/AlumniCommunity';
 import { AlumniOpportunities } from './components/alumni/AlumniOpportunities';
 import { AlumniEvents } from './components/alumni/AlumniEvents';
 import { AlumniProfilePage } from './components/alumni/AlumniProfilePage';
+import { LoginModal } from './components/auth/LoginModal';
+import { authService, User } from './services/authService';
 
-type AppState = 'landing' | 'onboarding' | 'dashboard' | 'alumni-onboarding' | 'alumni-dashboard';
+type AppState = 'landing' | 'onboarding' | 'dashboard' | 'alumni-onboarding' | 'alumni-dashboard' | 'system-admin' | 'university-admin';
 
 export default function App() {
   const [appState, setAppState] = useState<AppState>('landing');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser());
   const [activeDashboardTab, setActiveDashboardTab] = useState('dashboard');
   const [activeAlumniTab, setActiveAlumniTab] = useState('home');
   const [alumniProgress, setAlumniProgress] = useState(0);
 
   const handleStartTrial = () => setAppState('onboarding');
   const handleOnboardingComplete = () => setAppState('dashboard');
-  const handleLogin = () => setAppState('dashboard');
-  const handleAlumniLogin = () => setAppState('alumni-onboarding');
+  
+  const handleLoginSuccess = (user: User) => {
+    setCurrentUser(user);
+    switch (user.role) {
+      case 'SYSTEM_ADMIN':
+        setAppState('dashboard'); // For now using same dashboard but role-filtered
+        break;
+      case 'UNIVERSITY_ADMIN':
+        setAppState('dashboard');
+        break;
+      case 'SPACE_ADMIN':
+        setAppState('dashboard');
+        break;
+      case 'ALUMNI':
+        setAppState('alumni-onboarding');
+        break;
+    }
+  };
+
   const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
     setAppState('landing');
     setActiveAlumniTab('home');
   };
@@ -63,15 +88,17 @@ export default function App() {
   };
 
   const renderDashboardContent = () => {
+    const userRole = currentUser?.role || 'SPACE_ADMIN';
+
     switch (activeDashboardTab) {
       case 'dashboard':
-        return <DashboardHome />;
+        return <DashboardHome userRole={userRole} />;
       case 'alumni':
-        return <AlumniManagement onNavigate={setActiveDashboardTab} />;
+        return <AlumniManagement onNavigate={setActiveDashboardTab} userRole={userRole} />;
       case 'alumni-profile':
         return <AlumniProfile onBack={() => setActiveDashboardTab('alumni')} />;
       case 'events':
-        return <EventsCalendar />;
+        return <EventsCalendar userRole={userRole} />;
       case 'jobs':
         return <JobBoard />;
       case 'companies':
@@ -88,8 +115,12 @@ export default function App() {
         return <Integrations />;
       case 'invite-alumni':
         return <InviteAlumni onBack={() => setActiveDashboardTab('alumni')} />;
+      case 'spaces':
+        return <SpaceManagement />;
+      case 'billing':
+        return <Billing />;
       case 'settings':
-        return <Settings />;
+        return <Settings userRole={userRole} />;
       default:
         return (
           <div className="flex items-center justify-center h-96 text-slate-500">
@@ -104,10 +135,15 @@ export default function App() {
       {appState === 'landing' && (
         <LandingPage 
           onStartTrial={handleStartTrial} 
-          onLogin={handleLogin} 
-          onAlumniLogin={handleAlumniLogin}
+          onLogin={() => setIsLoginModalOpen(true)} 
         />
       )}
+
+      <LoginModal 
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={handleLoginSuccess}
+      />
       
       {appState === 'onboarding' && (
         <OnboardingContainer onCancel={handleOnboardingComplete} />
@@ -135,6 +171,8 @@ export default function App() {
           activeTab={activeDashboardTab} 
           onTabChange={setActiveDashboardTab}
           onLogout={handleLogout}
+          userRole={currentUser?.role || 'SPACE_ADMIN'}
+          userName={currentUser?.name || 'Admin'}
         >
           {renderDashboardContent()}
         </DashboardLayout>

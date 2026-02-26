@@ -7,11 +7,17 @@ import { PrivacySettings } from './settings/PrivacySettings';
 import { EmailSettings } from './settings/EmailSettings';
 import { AdminInfo } from './settings/AdminInfo';
 
-export const Settings: React.FC = () => {
+interface SettingsProps {
+  userRole?: string;
+}
+
+export const Settings: React.FC<SettingsProps> = ({ userRole = 'SPACE_ADMIN' }) => {
   const [activeTab, setActiveTab] = useState('profile');
 
+  const isUniversityAdmin = userRole === 'UNIVERSITY_ADMIN';
+
   const tabs = [
-    { id: 'profile', label: 'Space Profile' },
+    { id: 'profile', label: isUniversityAdmin ? 'University Profile' : 'Space Profile' },
     { id: 'branding', label: 'Branding & Theme' },
     { id: 'roles', label: 'Roles & Permissions' },
     { id: 'admin', label: 'Admin Info' },
@@ -37,12 +43,16 @@ export const Settings: React.FC = () => {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold text-slate-900">Space Settings</h1>
-          <span className="text-xs font-bold px-2 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-100">
-            Space: CSE Department
+          <h1 className="text-2xl font-bold text-slate-900">{isUniversityAdmin ? 'University Settings' : 'Space Settings'}</h1>
+          <span className={`text-xs font-bold px-2 py-1 rounded-full border ${
+            isUniversityAdmin ? 'bg-indigo-50 text-indigo-700 border-indigo-100' : 'bg-blue-50 text-blue-700 border-blue-100'
+          }`}>
+            {isUniversityAdmin ? 'University: Full Access' : 'Space: CSE Department'}
           </span>
         </div>
-        <p className="text-slate-500">Manage your department preferences and configurations.</p>
+        <p className="text-slate-500">
+          {isUniversityAdmin ? 'Manage your university-wide preferences and configurations.' : 'Manage your department preferences and configurations.'}
+        </p>
       </div>
 
       {/* Tabs */}

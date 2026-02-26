@@ -100,7 +100,11 @@ const TEMPLATES = [
   { id: 'social', name: 'Reunion Showcase', description: 'Gallery focused layout for social gatherings.', icon: <ImageIcon size={24} /> },
 ];
 
-export const EventsCalendar: React.FC = () => {
+interface EventsCalendarProps {
+  userRole?: string;
+}
+
+export const EventsCalendar: React.FC<EventsCalendarProps> = ({ userRole = 'SPACE_ADMIN' }) => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 1, 1)); // Feb 2026
   const [view, setView] = useState<'month' | 'week' | 'list'>('month');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -112,6 +116,8 @@ export const EventsCalendar: React.FC = () => {
   const [landingPages, setLandingPages] = useState(INITIAL_LANDING_PAGES);
   const [selectedCategories, setSelectedCategories] = useState(CATEGORIES.map(c => c.id));
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const isUniversityAdmin = userRole === 'UNIVERSITY_ADMIN';
 
   // Create Event Form State
   const [newEvent, setNewEvent] = useState({
@@ -135,15 +141,16 @@ export const EventsCalendar: React.FC = () => {
   });
 
   // Audience Targeting State
-  const [audienceType, setAudienceType] = useState('all'); // all, batch, dept
+  const [audienceType, setAudienceType] = useState('all'); // all, batch, dept, space
   const [audienceSubValue, setAudienceSubValue] = useState('');
-  const [estimatedReach, setEstimatedReach] = useState(845);
+  const [estimatedReach, setEstimatedReach] = useState(isUniversityAdmin ? 6355 : 845);
 
   useEffect(() => {
-    if (audienceType === 'all') setEstimatedReach(845);
-    else if (audienceType === 'batch') setEstimatedReach(150);
-    else if (audienceType === 'dept') setEstimatedReach(845);
-  }, [audienceType, audienceSubValue]);
+    const totalReach = isUniversityAdmin ? 6355 : 845;
+    if (audienceType === 'all') setEstimatedReach(totalReach);
+    else if (audienceType === 'batch') setEstimatedReach(Math.floor(totalReach * 0.15));
+    else if (audienceType === 'dept' || audienceType === 'space') setEstimatedReach(845);
+  }, [audienceType, audienceSubValue, isUniversityAdmin]);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
