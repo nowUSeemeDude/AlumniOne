@@ -19,7 +19,8 @@ import {
   Trash2,
   RefreshCw,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Cake
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
@@ -41,6 +42,7 @@ interface Alumni {
   email: string;
   phone: string;
   role: string;
+  dateOfBirth: string;
 }
 
 export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }) => {
@@ -52,10 +54,14 @@ export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }
 
   // Mock Data - Filtered for CSE Space
   const [alumni, setAlumni] = useState<Alumni[]>([
-    { id: 1, name: 'Sarah Khan', batch: 'CSE 2018', department: 'Computer Science', status: 'Verified', company: 'Google', location: 'Dhaka, BD', avatar: 'SK', imageUrl: 'https://picsum.photos/seed/sarah/100/100', email: 'sarah.k@example.com', phone: '+880 1711 000000', role: 'Alumni' },
-    { id: 4, name: 'Karim Uddin', batch: 'CSE 2017', department: 'Computer Science', status: 'Rejected', company: 'Freelancer', location: 'Sylhet, BD', avatar: 'KU', imageUrl: 'https://picsum.photos/seed/karim/100/100', email: 'karim.u@example.com', phone: '+880 1911 000000', role: 'Alumni' },
-    { id: 6, name: 'Tanvir Ahmed', batch: 'CSE 2020', department: 'Computer Science', status: 'Verified', company: 'Pathao', location: 'Dhaka, BD', avatar: 'TA', imageUrl: 'https://picsum.photos/seed/tanvir/100/100', email: 'tanvir.a@example.com', phone: '+880 1511 000000', role: 'Alumni' },
+    { id: 1, name: 'Sarah Khan', batch: 'CSE 2018', department: 'Computer Science', status: 'Verified', company: 'Google', location: 'Dhaka, BD', avatar: 'SK', imageUrl: 'https://picsum.photos/seed/sarah/100/100', email: 'sarah.k@example.com', phone: '+880 1711 000000', role: 'Alumni', dateOfBirth: '1995-02-25' },
+    { id: 4, name: 'Karim Uddin', batch: 'CSE 2017', department: 'Computer Science', status: 'Rejected', company: 'Freelancer', location: 'Sylhet, BD', avatar: 'KU', imageUrl: 'https://picsum.photos/seed/karim/100/100', email: 'karim.u@example.com', phone: '+880 1911 000000', role: 'Alumni', dateOfBirth: '1994-05-12' },
+    { id: 6, name: 'Tanvir Ahmed', batch: 'CSE 2020', department: 'Computer Science', status: 'Verified', company: 'Pathao', location: 'Dhaka, BD', avatar: 'TA', imageUrl: 'https://picsum.photos/seed/tanvir/100/100', email: 'tanvir.a@example.com', phone: '+880 1511 000000', role: 'Alumni', dateOfBirth: '1997-08-20' },
   ]);
+
+  const today = new Date();
+  const todayMonthDay = `${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const birthdayAlumni = alumni.filter(a => a.dateOfBirth.endsWith(todayMonthDay));
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -121,6 +127,16 @@ export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }
                 </div>
 
                 <div className="space-y-6">
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Personal Details</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 text-sm text-slate-600">
+                        <Cake size={16} className="text-slate-400" />
+                        Born: {selectedAlumni.dateOfBirth}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Contact Information</h4>
                     <div className="space-y-3">
@@ -196,6 +212,39 @@ export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Birthday Section */}
+      {birthdayAlumni.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-100 rounded-xl p-6 shadow-sm"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-pink-100 text-pink-600 rounded-lg">
+              <Cake size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Birthday Today!</h3>
+              <p className="text-sm text-slate-500">Celebrate with our alumni members</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            {birthdayAlumni.map(alum => (
+              <div key={alum.id} className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-pink-100 flex items-center gap-3 shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-sm">
+                  {alum.avatar}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">{alum.name}</p>
+                  <p className="text-xs text-slate-500">{alum.batch}</p>
+                </div>
+                <Button size="sm" variant="ghost" className="text-pink-600 hover:bg-pink-50 ml-2">Wish Happy Birthday</Button>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -298,7 +347,7 @@ export const AlumniManagement: React.FC<AlumniManagementProps> = ({ onNavigate }
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right relative">
-                    <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity">
                       <button 
                         onClick={() => handleViewProfile(alum)}
                         className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 

@@ -53,6 +53,7 @@ export const InviteAlumni: React.FC<InviteAlumniProps> = ({ onBack }) => {
     name: '',
     email: '',
     phone: '',
+    dateOfBirth: '',
     department: '',
     batch: '',
     message: ''
@@ -223,6 +224,15 @@ export const InviteAlumni: React.FC<InviteAlumniProps> = ({ onBack }) => {
                       onChange={(e) => setSingleForm({...singleForm, phone: e.target.value})}
                       className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                       placeholder="e.g. +880 1711 000000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
+                    <input
+                      type="date"
+                      value={singleForm.dateOfBirth}
+                      onChange={(e) => setSingleForm({...singleForm, dateOfBirth: e.target.value})}
+                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     />
                   </div>
                 </div>

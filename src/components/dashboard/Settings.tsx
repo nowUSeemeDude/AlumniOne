@@ -5,6 +5,7 @@ import { RolesAndPermissions } from './settings/RolesAndPermissions';
 import { BrandingSettings } from './settings/BrandingSettings';
 import { PrivacySettings } from './settings/PrivacySettings';
 import { EmailSettings } from './settings/EmailSettings';
+import { AdminInfo } from './settings/AdminInfo';
 
 export const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -13,6 +14,7 @@ export const Settings: React.FC = () => {
     { id: 'profile', label: 'Space Profile' },
     { id: 'branding', label: 'Branding & Theme' },
     { id: 'roles', label: 'Roles & Permissions' },
+    { id: 'admin', label: 'Admin Info' },
     { id: 'privacy', label: 'Privacy Controls' },
     { id: 'email', label: 'Email Configuration' },
   ];
@@ -251,6 +253,10 @@ export const Settings: React.FC = () => {
           
           {activeTab === 'roles' && (
             <RolesAndPermissions />
+          )}
+
+          {activeTab === 'admin' && (
+            <AdminInfo />
           )}
 
           {activeTab === 'privacy' && (

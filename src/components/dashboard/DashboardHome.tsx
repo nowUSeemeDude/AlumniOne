@@ -53,6 +53,14 @@ const RECENT_ACTIVITY = [
   { id: 4, user: 'System', action: 'generated report', target: 'Monthly Financials', time: '3 hours ago', icon: <DollarSign size={14} /> },
 ];
 
+const RECENTLY_JOINED_ALUMNI = [
+  { id: 1, name: 'Anika Rahman', batch: '2023', dept: 'CSE', time: '2 hours ago', initials: 'AR', color: 'bg-blue-100 text-blue-600' },
+  { id: 2, name: 'Tanvir Hossain', batch: '2023', dept: 'CSE', time: '5 hours ago', initials: 'TH', color: 'bg-emerald-100 text-emerald-600' },
+  { id: 3, name: 'Maliha Islam', batch: '2022', dept: 'CSE', time: 'Yesterday', initials: 'MI', color: 'bg-purple-100 text-purple-600' },
+  { id: 4, name: 'Zubair Ahmed', batch: '2023', dept: 'CSE', time: '2 days ago', initials: 'ZA', color: 'bg-amber-100 text-amber-600' },
+  { id: 5, name: 'Farhana Yeasmin', batch: '2021', dept: 'CSE', time: '3 days ago', initials: 'FY', color: 'bg-pink-100 text-pink-600' },
+];
+
 export const DashboardHome: React.FC = () => {
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -251,6 +259,38 @@ export const DashboardHome: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* SECTION: Recently Joined Alumni */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Recently Joined Alumni</h3>
+            <p className="text-sm text-slate-500">New members in the CSE Department space</p>
+          </div>
+          <Button variant="ghost" size="sm" className="text-blue-600 flex items-center gap-1">
+            View Directory <ChevronRight size={16} />
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {RECENTLY_JOINED_ALUMNI.map((alumni) => (
+            <motion.div 
+              key={alumni.id}
+              whileHover={{ y: -4 }}
+              className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col items-center text-center group transition-all hover:bg-white hover:shadow-md hover:border-blue-100"
+            >
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm mb-3 ${alumni.color}`}>
+                {alumni.initials}
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{alumni.name}</h4>
+              <p className="text-xs text-slate-500 mt-1">Batch {alumni.batch} • {alumni.dept}</p>
+              <div className="mt-3 flex items-center gap-1 text-[10px] font-medium text-slate-400">
+                <Clock size={10} />
+                {alumni.time}
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
 

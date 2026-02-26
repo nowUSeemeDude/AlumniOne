@@ -130,7 +130,7 @@ export const EventsCalendar: React.FC = () => {
     refundPolicy: 'No Refunds',
     sendEmail: false,
     sendWhatsApp: false,
-    generateLandingPage: false,
+    landingPageOption: 'none',
     description: ''
   });
 
@@ -202,7 +202,7 @@ export const EventsCalendar: React.FC = () => {
       refundPolicy: 'No Refunds',
       sendEmail: false,
       sendWhatsApp: false,
-      generateLandingPage: false,
+      landingPageOption: 'none',
       description: ''
     });
     setIsCreatePanelOpen(true);
@@ -899,24 +899,40 @@ export const EventsCalendar: React.FC = () => {
 
                 {/* Section 5: Landing Page */}
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                  <div className="flex justify-between items-center mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">5</div>
                       Event Landing Page
                     </h3>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={newEvent.generateLandingPage}
-                        onChange={(e) => setNewEvent({...newEvent, generateLandingPage: e.target.checked})}
-                        className="sr-only peer" 
-                      />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div className="w-full sm:w-64">
+                      <select 
+                        value={newEvent.landingPageOption}
+                        onChange={(e) => setNewEvent({...newEvent, landingPageOption: e.target.value})}
+                        className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-sm outline-none"
+                      >
+                        <option value="none">No Landing Page</option>
+                        <option value="standard">Standard Landing Page</option>
+                        <option value="mega">Mega Event (Contact Support)</option>
+                      </select>
+                    </div>
                   </div>
 
+                  {newEvent.landingPageOption === 'mega' && (
+                    <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                      <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={18} />
+                      <div>
+                        <p className="text-sm font-bold text-amber-900">Mega Event Notice</p>
+                        <p className="text-xs text-amber-700 mt-1">
+                          For events with expected attendance over 5,000 (Mega Events), please contact our support team at 
+                          <span className="font-bold ml-1">support@alumnione.com</span> before creating the event to ensure 
+                          server capacity and dedicated resource allocation.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <AnimatePresence>
-                    {newEvent.generateLandingPage && (
+                    {newEvent.landingPageOption === 'standard' && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                         <div className="space-y-4">
                           <div>
