@@ -17,6 +17,11 @@ import { VotingModule } from './components/dashboard/VotingModule';
 import { Settings } from './components/dashboard/Settings';
 import { SpaceManagement } from './components/dashboard/SpaceManagement';
 import { Billing } from './components/dashboard/Billing';
+import { SystemAdminLayout } from './components/system/SystemAdminLayout';
+import { SystemDashboard } from './components/system/SystemDashboard';
+import { UniversityManagement as SystemUniversityManagement } from './components/system/UniversityManagement';
+import { GlobalUserManagement } from './components/system/GlobalUserManagement';
+import { FeatureManagement } from './components/system/FeatureManagement';
 import { AlumniOnboarding } from './components/alumni/AlumniOnboarding';
 import { AlumniWorkspaceLayout } from './components/alumni/AlumniWorkspaceLayout';
 import { AlumniHome } from './components/alumni/AlumniHome';
@@ -130,6 +135,27 @@ export default function App() {
     }
   };
 
+  const renderSystemAdminContent = () => {
+    switch (activeDashboardTab) {
+      case 'dashboard':
+        return <SystemDashboard />;
+      case 'universities':
+        return <SystemUniversityManagement />;
+      case 'users':
+        return <GlobalUserManagement />;
+      case 'features':
+        return <FeatureManagement />;
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center h-96 text-slate-500 gap-4">
+            <Settings size={48} className="animate-spin-slow" />
+            <p className="text-xl font-bold">Module "{activeDashboardTab}" is under construction</p>
+            <p className="text-sm">System Admin modules require high-security implementation.</p>
+          </div>
+        );
+    }
+  };
+
   return (
     <>
       {appState === 'landing' && (
@@ -166,7 +192,18 @@ export default function App() {
         </AlumniWorkspaceLayout>
       )}
 
-      {appState === 'dashboard' && (
+      {appState === 'dashboard' && currentUser?.role === 'SYSTEM_ADMIN' && (
+        <SystemAdminLayout
+          activeTab={activeDashboardTab}
+          onTabChange={setActiveDashboardTab}
+          onLogout={handleLogout}
+          userName={currentUser?.name}
+        >
+          {renderSystemAdminContent()}
+        </SystemAdminLayout>
+      )}
+
+      {appState === 'dashboard' && currentUser?.role !== 'SYSTEM_ADMIN' && (
         <DashboardLayout 
           activeTab={activeDashboardTab} 
           onTabChange={setActiveDashboardTab}

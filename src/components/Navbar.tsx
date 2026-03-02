@@ -53,11 +53,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onStartTrial, onLogin }) => {
               {link.name}
             </a>
           ))}
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" className="text-blue-600 border-blue-200" onClick={onLogin}>
+          <div className="flex items-center gap-6">
+            <button 
+              onClick={onLogin}
+              className="text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors"
+            >
               Login
+            </button>
+            <Button size="sm" onClick={onStartTrial} className="rounded-full px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium flex items-center gap-2">
+              Start Free Trial <span className="text-lg leading-none">›</span>
             </Button>
-            <Button size="sm" onClick={onStartTrial}>Start Free Trial</Button>
           </div>
         </div>
 
