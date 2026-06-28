@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
+import { ConfigureAcademicStructure } from './ConfigureAcademicStructure';
+import { BatchDetailsView } from './BatchDetailsView';
 
 interface Space {
   id: string;
@@ -31,6 +33,8 @@ interface Space {
   status: 'active' | 'inactive';
   lastActivity: string;
   email?: string;
+  adminEmail?: string;
+  logo?: string;
 }
 
 const MOCK_SPACES: Space[] = [
@@ -64,14 +68,38 @@ export const SpaceManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const [configuringSpace, setConfiguringSpace] = useState<Space | null>(null);
+  const [viewingBatchDetailsSpace, setViewingBatchDetailsSpace] = useState<Space | null>(null);
+  const [activeDropdownSpaceId, setActiveDropdownSpaceId] = useState<string | null>(null);
+  
+  // Custom Versatile Toast
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'info' }>({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast(prev => ({ ...prev, show: false }));
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
+  const triggerToast = (message: string, type: 'success' | 'info' = 'success') => {
+    setToast({ show: true, message, type });
+  };
 
   // Form State
   const [formData, setFormData] = useState({
     name: '',
     type: 'Department',
-    admin: '',
+    adminName: '',
+    adminEmail: '',
     email: '',
+    logo: '',
     status: 'active' as 'active' | 'inactive'
   });
 
@@ -82,27 +110,29 @@ export const SpaceManagement: React.FC = () => {
       id: Math.random().toString(36).substr(2, 9),
       name: formData.name,
       type: formData.type,
-      admin: formData.admin || 'Unassigned',
+      admin: formData.adminName || 'Unassigned',
+      adminEmail: formData.adminEmail,
       alumniCount: 0,
       status: formData.status,
       lastActivity: 'Just now',
-      email: formData.email
+      email: formData.email,
+      logo: formData.logo || undefined
     };
 
     setSpaces([newSpace, ...spaces]);
     setIsDrawerOpen(false);
-    setShowToast(true);
+    triggerToast(`Space "${formData.name}" created successfully! Invitation sent to ${formData.adminEmail}.`, 'success');
     
     // Reset form
     setFormData({
       name: '',
       type: 'Department',
-      admin: '',
+      adminName: '',
+      adminEmail: '',
       email: '',
+      logo: '',
       status: 'active'
     });
-
-    setTimeout(() => setShowToast(false), 3000);
   };
 
   const filteredSpaces = spaces.filter(space => {
@@ -112,21 +142,47 @@ export const SpaceManagement: React.FC = () => {
     return matchesSearch && matchesType;
   });
 
+  if (configuringSpace) {
+    return (
+      <ConfigureAcademicStructure
+        space={configuringSpace}
+        onBack={() => setConfiguringSpace(null)}
+        triggerToast={(msg, type) => {
+          setToast({ show: true, message: msg, type: type === 'error' ? 'info' : type });
+        }}
+      />
+    );
+  }
+
+  if (viewingBatchDetailsSpace) {
+    return (
+      <BatchDetailsView
+        space={viewingBatchDetailsSpace}
+        onBack={() => setViewingBatchDetailsSpace(null)}
+        triggerToast={(msg, type) => {
+          setToast({ show: true, message: msg, type: type === 'error' ? 'info' : type });
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 relative">
-      {/* Success Toast */}
+      {/* Dynamic Versatile Toast */}
       <AnimatePresence>
-        {showToast && (
+        {toast.show && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 right-8 z-[100] bg-emerald-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3"
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.9 }}
+            className={`fixed bottom-8 right-8 z-[100] ${
+              toast.type === 'success' ? 'bg-emerald-600' : 'bg-blue-600'
+            } text-white px-6 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 border border-white/10`}
           >
-            <div className="bg-white/20 p-1 rounded-full">
+            <div className="bg-white/20 p-1.5 rounded-full flex-shrink-0">
               <Check size={16} />
             </div>
-            <span className="font-medium">Space created successfully</span>
+            <span className="font-semibold text-sm">{toast.message}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -194,65 +250,180 @@ export const SpaceManagement: React.FC = () => {
 
       {/* Spaces Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredSpaces.map((space) => (
-          <motion.div
-            key={space.id}
-            layout
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ y: -4 }}
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col"
-          >
-            <div className="p-5 border-b border-slate-50">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                  <Building2 size={24} />
+        {filteredSpaces.map((space) => {
+          const isConfigured = localStorage.getItem(`alumnione_sessions_${space.id}`) !== null || ['1', '2', '3'].includes(space.id);
+          return (
+            <motion.div
+              key={space.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ y: -4 }}
+              className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col"
+            >
+              <div className="p-5 border-b border-slate-50">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center overflow-hidden border border-blue-100 flex-shrink-0">
+                    {space.logo ? (
+                      <img src={space.logo} alt={space.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Building2 size={24} />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 relative">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                      space.status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-500 border border-slate-100'
+                    }`}>
+                      {space.status}
+                    </span>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveDropdownSpaceId(activeDropdownSpaceId === space.id ? null : space.id);
+                      }}
+                      className="p-1 hover:bg-slate-50 rounded-lg text-slate-400"
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+
+                    {activeDropdownSpaceId === space.id && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDropdownSpaceId(null);
+                          }}
+                        />
+                        <div className="absolute right-0 top-8 w-48 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 z-50 text-xs font-semibold text-slate-700">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setConfiguringSpace(space);
+                              setActiveDropdownSpaceId(null);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
+                          >
+                            <Building2 size={14} className="text-slate-400" />
+                            Configure Structure
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setViewingBatchDetailsSpace(space);
+                              setActiveDropdownSpaceId(null);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
+                          >
+                            <Users size={14} className="text-slate-400" />
+                            Quick View Batches
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updated = spaces.map(s => s.id === space.id ? { ...s, status: s.status === 'active' ? 'inactive' as const : 'active' as const } : s);
+                              setSpaces(updated);
+                              triggerToast(`Space status for "${space.name}" updated successfully.`, 'success');
+                              setActiveDropdownSpaceId(null);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
+                          >
+                            <CheckCircle2 size={14} className="text-slate-400" />
+                            Toggle Status
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const updated = spaces.filter(s => s.id !== space.id);
+                              setSpaces(updated);
+                              triggerToast(`Space "${space.name}" deleted successfully.`, 'info');
+                              setActiveDropdownSpaceId(null);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-slate-50 text-red-600 border-t border-slate-100 flex items-center gap-2"
+                          >
+                            <Trash2 size={14} className="text-red-400" />
+                            Delete Space
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                    space.status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-slate-50 text-slate-500 border border-slate-100'
-                  }`}>
-                    {space.status}
+                <h3 className="text-lg font-bold text-slate-900">{space.name}</h3>
+                <p className="text-xs text-slate-500 mt-1">{space.type}</p>
+              </div>
+
+              <div className="p-5 flex-1 space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <Shield size={16} />
+                    <span>Admin</span>
+                  </div>
+                  <span className="font-medium text-slate-900">{space.admin}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <Users size={16} />
+                    <span>Alumni</span>
+                  </div>
+                  <span className="font-medium text-slate-900">
+                    {(() => {
+                      const savedBatches = localStorage.getItem(`alumnione_batches_${space.id}`);
+                      if (savedBatches) {
+                        try {
+                          const parsed = JSON.parse(savedBatches);
+                          if (Array.isArray(parsed) && parsed.length > 0) {
+                            const total = parsed.reduce((sum: number, b: any) => sum + (parseInt(b.alumniCount) || 0), 0);
+                            return total.toLocaleString();
+                          }
+                        } catch (e) {}
+                      }
+                      return '—';
+                    })()}
                   </span>
-                  <button className="p-1 hover:bg-slate-50 rounded-lg text-slate-400">
-                    <MoreVertical size={18} />
-                  </button>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <CheckCircle2 size={16} />
+                    <span>Last Activity</span>
+                  </div>
+                  <span className="font-medium text-slate-900">{space.lastActivity}</span>
                 </div>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">{space.name}</h3>
-              <p className="text-xs text-slate-500 mt-1">{space.type}</p>
-            </div>
 
-            <div className="p-5 flex-1 space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-slate-500">
-                  <Shield size={16} />
-                  <span>Admin</span>
-                </div>
-                <span className="font-medium text-slate-900">{space.admin}</span>
+              <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
+                {isConfigured ? (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 text-slate-700 border-slate-200 hover:bg-slate-100 font-semibold justify-center flex items-center gap-1.5"
+                      onClick={() => setViewingBatchDetailsSpace(space)}
+                    >
+                      View Batch Details
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold justify-center flex items-center gap-1.5"
+                      onClick={() => triggerToast(`Accessing Alumni Portal for "${space.name}"...`, 'success')}
+                    >
+                      Access Portal
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 font-semibold justify-center flex items-center gap-2"
+                    onClick={() => setConfiguringSpace(space)}
+                  >
+                    Configure Space
+                  </Button>
+                )}
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-slate-500">
-                  <Users size={16} />
-                  <span>Alumni</span>
-                </div>
-                <span className="font-medium text-slate-900">{space.alumniCount.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-slate-500">
-                  <CheckCircle2 size={16} />
-                  <span>Last Activity</span>
-                </div>
-                <span className="font-medium text-slate-900">{space.lastActivity}</span>
-              </div>
-            </div>
-
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1" leftIcon={<Edit2 size={14} />}>Edit</Button>
-              <Button variant="ghost" size="sm" className="flex-1 text-blue-600" rightIcon={<ExternalLink size={14} />}>Open Space</Button>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
 
         {/* Create New Card */}
         <button 
@@ -340,24 +511,40 @@ export const SpaceManagement: React.FC = () => {
                     </select>
                   </div>
 
-                  {/* Assign Space Admin */}
+                  {/* Space Admin Name */}
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                      Assign Space Admin <span className="text-red-500">*</span>
+                      Space Admin Name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                      <select
+                      <input
                         required
-                        value={formData.admin}
-                        onChange={(e) => setFormData({ ...formData, admin: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white transition-all"
-                      >
-                        <option value="">Select an existing user...</option>
-                        {MOCK_USERS.map(user => (
-                          <option key={user.id} value={user.name}>{user.name} ({user.email})</option>
-                        ))}
-                      </select>
+                        type="text"
+                        placeholder="e.g. Dr. Rahim Ahmed"
+                        value={formData.adminName}
+                        onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-500">Keep in mind: space admin is not an alumni.</p>
+                  </div>
+
+                  {/* Space Admin Email */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      Space Admin Email (for invitation) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                      <input
+                        required
+                        type="email"
+                        placeholder="e.g. admin@univ.edu"
+                        value={formData.adminEmail}
+                        onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                      />
                     </div>
                   </div>
 
@@ -380,12 +567,48 @@ export const SpaceManagement: React.FC = () => {
 
                   {/* Logo Upload */}
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Logo Upload</label>
-                    <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group">
-                      <Upload className="mb-2 group-hover:text-blue-500 transition-colors" size={24} />
-                      <p className="text-xs font-medium group-hover:text-blue-600 transition-colors">Click to upload logo</p>
-                      <p className="text-[10px] mt-1">PNG, JPG up to 2MB</p>
-                    </div>
+                    <label className="text-sm font-semibold text-slate-700">Space Logo</label>
+                    <input
+                      type="file"
+                      id="logo-upload-input"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setFormData({ ...formData, logo: reader.result as string });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    {formData.logo ? (
+                      <div className="relative border border-slate-200 rounded-xl p-4 flex items-center gap-4 bg-slate-50">
+                        <img src={formData.logo} alt="Preview" className="w-16 h-16 object-cover rounded-lg border border-slate-200" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-slate-900 truncate">Logo Uploaded</p>
+                          <p className="text-[10px] text-slate-500">Image ready for the space card</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, logo: '' })}
+                          className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div 
+                        onClick={() => document.getElementById('logo-upload-input')?.click()}
+                        className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group"
+                      >
+                        <Upload className="mb-2 group-hover:text-blue-500 transition-colors" size={24} />
+                        <p className="text-xs font-medium group-hover:text-blue-600 transition-colors">Click to upload space logo</p>
+                        <p className="text-[10px] mt-1">PNG, JPG up to 2MB</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Status */}
